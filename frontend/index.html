@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geo-fencing Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>🗺️ Geo-Fence</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="#users" class="nav-item" data-page="users">
+                    <span>👥</span> Users
+                </a>
+                <a href="#vehicles" class="nav-item" data-page="vehicles">
+                    <span>🚗</span> Vehicles
+                </a>
+                <a href="#geofences" class="nav-item" data-page="geofences">
+                    <span>📍</span> Geo-fences
+                </a>
+                <a href="#transactions" class="nav-item" data-page="transactions">
+                    <span>💳</span> Transactions
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <button onclick="loadDashboardStats()" class="btn btn-primary">Refresh</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚗</div>
+                        <div class="stat-info">
+                            <h3 id="totalVehicles">0</h3>
+                            <p>Total Vehicles</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-info">
+                            <h3 id="totalGeofences">0</h3>
+                            <p>Geo-fences</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <h3 id="totalRevenue">₹0</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+                    <div class="card">
+                        <h3>Recent Transactions</h3>
+                        <div id="recentTransactions" class="transaction-list">
+                            <p class="loading">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Page -->
+            <div id="users" class="page">
+                <div class="page-header">
+                    <h1>Users Management</h1>
+                    <button onclick="openUserModal()" class="btn btn-primary">+ Add User</button>
+                </div>
+
+                <div class="card">
+                    <div class="search-bar">
+                        <input type="text" id="userSearch" placeholder="Search users..." onkeyup="searchUsers()">
+                    </div>
+                    <div class="table-container">
+                        <table id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Mobile</th>
+                                    <th>Wallet Balance</th>
+                                    <th>Vehicles</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicles Page -->
+            <div id="vehicles" class="page">
+                <div class="page-header">
+                    <h1>Vehicles Management</h1>
+                    <button onclick="openVehicleModal()" class="btn btn-primary">+ Add Vehicle</button>
+                </div>
+
+                <div class="card">
+                    <div class="search-bar">
+                        <input type="text" id="vehicleSearch" placeholder="Search vehicles..." onkeyup="searchVehicles()">
+                    </div>
+                    <div class="table-container">
+                        <table id="vehiclesTable">
+                            <thead>
+                                <tr>
+                                    <th>Registration No</th>
+                                    <th>Owner</th>
+                                    <th>Type</th>
+                                    <th>Device ID</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vehiclesTableBody">
+                                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geo-fences Page -->
+            <div id="geofences" class="page">
+                <div class="page-header">
+                    <h1>Geo-fences Management</h1>
+                    <button onclick="openGeofenceModal()" class="btn btn-primary">+ Add Geo-fence</button>
+                </div>
+
+                <div class="card">
+                    <div class="filter-bar">
+                        <select id="geofenceTypeFilter" onchange="filterGeofences()">
+                            <option value="">All Types</option>
+                            <option value="toll">Toll Zones</option>
+                            <option value="danger">Danger Zones</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="geofencesTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Coordinates</th>
+                                    <th>Toll/Alert</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="geofencesTableBody">
+                                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Page -->
+            <div id="transactions" class="page">
+                <div class="page-header">
+                    <h1>Transactions</h1>
+                    <button onclick="loadTransactions()" class="btn btn-primary">Refresh</button>
+                </div>
+
+                <div class="card">
+                    <div class="filter-bar">
+                        <select id="transactionStatusFilter" onchange="filterTransactions()">
+                            <option value="">All Status</option>
+                            <option value="success">Success</option>
+                            <option value="failed">Failed</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="transactionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date/Time</th>
+                                    <th>Vehicle</th>
+                                    <th>Zone</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTableBody">
+                                <tr><td colspan="6" class="loading">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Add User</h2>
+                <span class="close" onclick="closeUserModal()">&times;</span>
+            </div>
+            <form id="userForm" onsubmit="saveUser(event)">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="userName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Mobile *</label>
+                    <input type="tel" id="userMobile" required>
+                </div>
+                <div class="form-group">
+                    <label>Wallet Balance</label>
+                    <input type="number" id="userWallet" value="0" min="0" step="0.01">
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeUserModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vehicle Modal -->
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="vehicleModalTitle">Add Vehicle</h2>
+                <span class="close" onclick="closeVehicleModal()">&times;</span>
+            </div>
+            <form id="vehicleForm" onsubmit="saveVehicle(event)">
+                <div class="form-group">
+                    <label>Owner *</label>
+                    <select id="vehicleOwner" required>
+                        <option value="">Select User</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Registration Number *</label>
+                    <input type="text" id="vehicleRegNo" required placeholder="e.g., KL-01-AB-1234">
+                </div>
+                <div class="form-group">
+                    <label>Device ID *</label>
+                    <input type="text" id="vehicleDeviceID" required placeholder="e.g., ESP32_001">
+                </div>
+                <div class="form-group">
+                    <label>Vehicle Type *</label>
+                    <select id="vehicleType" required>
+                        <option value="">Select Type</option>
+                        <option value="car">Car</option>
+                        <option value="truck">Truck</option>
+                        <option value="motorcycle">Motorcycle</option>
+                        <option value="bus">Bus</option>
+                        <option value="suv">SUV</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Manufacturer</label>
+                    <input type="text" id="vehicleManufacturer" placeholder="e.g., Toyota">
+                </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" id="vehicleModel" placeholder="e.g., Fortuner">
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <input type="text" id="vehicleColor" placeholder="e.g., White">
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeVehicleModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Geo-fence Modal -->
+    <div id="geofenceModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="geofenceModalTitle">Add Geo-fence</h2>
+                <span class="close" onclick="closeGeofenceModal()">&times;</span>
+            </div>
+            <form id="geofenceForm" onsubmit="saveGeofence(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" id="geofenceName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type *</label>
+                        <select id="geofenceType" required onchange="toggleGeofenceFields()">
+                            <option value="">Select Type</option>
+                            <option value="toll">Toll Zone</option>
+                            <option value="danger">Danger Zone</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="geofenceDescription" rows="2"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" id="tollAmountGroup" style="display: none;">
+                        <label>Toll Amount (₹) *</label>
+                        <input type="number" id="geofenceTollAmount" min="0" step="0.01">
+                    </div>
+                    <div class="form-group" id="severityGroup" style="display: none;">
+                        <label>Severity</label>
+                        <select id="geofenceSeverity">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="alertMessageGroup" style="display: none;">
+                    <label>Alert Message</label>
+                    <input type="text" id="geofenceAlertMessage" placeholder="Warning message for drivers">
+                </div>
+                <div class="form-group">
+                    <label>Speed Limit (km/h)</label>
+                    <input type="number" id="geofenceSpeedLimit" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Coordinates (Polygon) *</label>
+                    <p class="help-text">Enter at least 3 coordinate pairs. Format: longitude,latitude (one per line)</p>
+                    <textarea id="geofenceCoordinates" rows="5" required placeholder="76.2673,9.9312&#10;76.2678,9.9318&#10;76.2665,9.9325"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeGeofenceModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recharge Modal -->
+    <div id="rechargeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Recharge Wallet</h2>
+                <span class="close" onclick="closeRechargeModal()">&times;</span>
+            </div>
+            <form id="rechargeForm" onsubmit="processRecharge(event)">
+                <div class="form-group">
+                    <label>Current Balance</label>
+                    <input type="text" id="currentBalance" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Recharge Amount (₹) *</label>
+                    <input type="number" id="rechargeAmount" required min="1" step="0.01">
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeRechargeModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Recharge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
