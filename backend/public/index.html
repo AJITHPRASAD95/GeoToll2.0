@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geo-fencing Admin Dashboard</title>
-
-    <!-- Static CSS served by Express -->
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <div class="container">
-
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
@@ -28,7 +25,6 @@
 
         <!-- Main Content -->
         <main class="main-content">
-
             <!-- Dashboard -->
             <section id="dashboard" class="page active">
                 <div class="page-header">
@@ -180,11 +176,172 @@
                     </table>
                 </div>
             </section>
-
         </main>
     </div>
 
-    <!-- Static JS served by Express -->
+    <!-- User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Add User</h2>
+                <span class="close" onclick="closeUserModal()">&times;</span>
+            </div>
+            <form id="userForm" onsubmit="saveUser(event)">
+                <div class="form-group">
+                    <label for="userName">Name *</label>
+                    <input type="text" id="userName" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email *</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="userMobile">Mobile *</label>
+                    <input type="tel" id="userMobile" required pattern="[0-9]{10}" placeholder="10-digit mobile number">
+                </div>
+                <div class="form-group">
+                    <label for="userWallet">Initial Wallet Balance (₹)</label>
+                    <input type="number" id="userWallet" value="0" step="0.01" min="0">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vehicle Modal -->
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="vehicleModalTitle">Add Vehicle</h2>
+                <span class="close" onclick="closeVehicleModal()">&times;</span>
+            </div>
+            <form id="vehicleForm" onsubmit="saveVehicle(event)">
+                <div class="form-group">
+                    <label for="vehicleOwner">Owner *</label>
+                    <select id="vehicleOwner" required>
+                        <option value="">Select Owner</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="vehicleRegNo">Registration Number *</label>
+                    <input type="text" id="vehicleRegNo" required placeholder="e.g., KL01AB1234">
+                </div>
+                <div class="form-group">
+                    <label for="vehicleType">Vehicle Type *</label>
+                    <select id="vehicleType" required>
+                        <option value="">Select Type</option>
+                        <option value="car">Car</option>
+                        <option value="motorcycle">Motorcycle</option>
+                        <option value="truck">Truck</option>
+                        <option value="bus">Bus</option>
+                        <option value="suv">SUV</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="vehicleDeviceId">Device ID *</label>
+                    <input type="text" id="vehicleDeviceId" required placeholder="GPS Device ID">
+                </div>
+                <div class="form-group">
+                    <label for="vehicleMake">Manufacturer</label>
+                    <input type="text" id="vehicleMake" placeholder="e.g., Toyota">
+                </div>
+                <div class="form-group">
+                    <label for="vehicleModel">Model</label>
+                    <input type="text" id="vehicleModel" placeholder="e.g., Corolla">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeVehicleModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Vehicle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Geofence Modal -->
+    <div id="geofenceModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2 id="geofenceModalTitle">Add Geo-fence</h2>
+                <span class="close" onclick="closeGeofenceModal()">&times;</span>
+            </div>
+            <form id="geofenceForm" onsubmit="saveGeofence(event)">
+                <div class="form-group">
+                    <label for="geofenceName">Name *</label>
+                    <input type="text" id="geofenceName" required placeholder="e.g., NH-47 Toll Plaza">
+                </div>
+                <div class="form-group">
+                    <label for="geofenceType">Type *</label>
+                    <select id="geofenceType" required onchange="toggleGeofenceFields()">
+                        <option value="">Select Type</option>
+                        <option value="toll">Toll Zone</option>
+                        <option value="danger">Danger Zone</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="geofenceDescription">Description</label>
+                    <textarea id="geofenceDescription" rows="2" placeholder="Optional description"></textarea>
+                </div>
+                <div class="form-group" id="tollAmountGroup" style="display: none;">
+                    <label for="geofenceTollAmount">Toll Amount (₹) *</label>
+                    <input type="number" id="geofenceTollAmount" step="0.01" min="0" placeholder="e.g., 50">
+                </div>
+                <div class="form-group" id="severityGroup" style="display: none;">
+                    <label for="geofenceSeverity">Severity *</label>
+                    <select id="geofenceSeverity">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+                <div class="form-group" id="alertMessageGroup" style="display: none;">
+                    <label for="geofenceAlertMessage">Alert Message *</label>
+                    <input type="text" id="geofenceAlertMessage" placeholder="e.g., Accident-prone zone ahead">
+                </div>
+                <div class="form-group">
+                    <label for="geofenceSpeedLimit">Speed Limit (km/h)</label>
+                    <input type="number" id="geofenceSpeedLimit" min="0" placeholder="Optional, e.g., 60">
+                </div>
+                <div class="form-group">
+                    <label for="geofenceCoordinates">Coordinates (longitude, latitude) *</label>
+                    <p class="help-text">Enter one coordinate pair per line. Format: longitude,latitude</p>
+                    <textarea id="geofenceCoordinates" rows="6" required placeholder="76.2673,9.9312&#10;76.2680,9.9315&#10;76.2685,9.9310&#10;76.2678,9.9305"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeGeofenceModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Geo-fence</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recharge Modal -->
+    <div id="rechargeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Recharge Wallet</h2>
+                <span class="close" onclick="closeRechargeModal()">&times;</span>
+            </div>
+            <form id="rechargeForm" onsubmit="processRecharge(event)">
+                <div class="form-group">
+                    <label>Current Balance</label>
+                    <input type="text" id="currentBalance" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="rechargeAmount">Recharge Amount (₹) *</label>
+                    <input type="number" id="rechargeAmount" required step="0.01" min="1" placeholder="Enter amount">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeRechargeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success">Recharge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="/script.js"></script>
 </body>
 </html>
