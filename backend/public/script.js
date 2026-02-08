@@ -1,7 +1,6 @@
 // API Base URL
 const API_URL = '/api';
 
-
 // Global variables
 let currentUserId = null;
 let allUsers = [];
@@ -80,19 +79,20 @@ async function loadDashboardStats() {
         const geofences = await geofencesRes.json();
         const stats = await statsRes.json();
 
-        document.getElementById('totalUsers').textContent = users.data.length;
-        document.getElementById('totalVehicles').textContent = vehicles.data.length;
-        document.getElementById('totalGeofences').textContent = geofences.data.length;
-        document.getElementById('totalRevenue').textContent = `₹${stats.data.totalRevenue.toFixed(2)}`;
+        document.getElementById('totalUsers').textContent = users.data?.length || 0;
+        document.getElementById('totalVehicles').textContent = vehicles.data?.length || 0;
+        document.getElementById('totalGeofences').textContent = geofences.data?.length || 0;
+        document.getElementById('totalRevenue').textContent = `₹${(stats.data?.totalRevenue || 0).toFixed(2)}`;
 
         // Load recent transactions
         const transRes = await fetch(`${API_URL}/transactions`);
         const transactions = await transRes.json();
-        displayRecentTransactions(transactions.data.slice(0, 10));
+        displayRecentTransactions((transactions.data || []).slice(0, 10));
 
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        showNotification('Error loading dashboard data', 'error');
+        document.getElementById('recentTransactions').innerHTML = '<p class="loading" style="color: #EF4444;">Error loading dashboard. Please ensure the backend server is running.</p>';
+        showNotification('Error loading dashboard data. Check if backend is running.', 'error');
     }
 }
 
@@ -122,11 +122,14 @@ function displayRecentTransactions(transactions) {
 async function loadUsers() {
     try {
         const response = await fetch(`${API_URL}/users`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        allUsers = data.data;
+        allUsers = data.data || [];
         displayUsers(allUsers);
     } catch (error) {
         console.error('Error loading users:', error);
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" class="loading" style="color: #EF4444;">Error loading users. Please check if the backend server is running.</td></tr>';
         showNotification('Error loading users', 'error');
     }
 }
@@ -145,7 +148,7 @@ function displayUsers(users) {
             <td>${user.email}</td>
             <td>${user.mobile}</td>
             <td>₹${user.walletBalance.toFixed(2)}</td>
-            <td>${user.vehicles.length}</td>
+            <td>${user.vehicles?.length || 0}</td>
             <td class="action-buttons">
                 <button onclick="rechargeWallet('${user._id}', ${user.walletBalance})" class="btn btn-success btn-sm">Recharge</button>
                 <button onclick="editUser('${user._id}')" class="btn btn-primary btn-sm">Edit</button>
@@ -276,16 +279,21 @@ async function processRecharge(event) {
 async function loadVehicles() {
     try {
         const response = await fetch(`${API_URL}/vehicles`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        allVehicles = data.data;
+        allVehicles = data.data || [];
         displayVehicles(allVehicles);
 
         // Load users for dropdown
         const usersResponse = await fetch(`${API_URL}/users`);
-        const usersData = await usersResponse.json();
-        populateUserDropdown(usersData.data);
+        if (usersResponse.ok) {
+            const usersData = await usersResponse.json();
+            populateUserDropdown(usersData.data || []);
+        }
     } catch (error) {
         console.error('Error loading vehicles:', error);
+        const tbody = document.getElementById('vehiclesTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" class="loading" style="color: #EF4444;">Error loading vehicles. Please check if the backend server is running.</td></tr>';
         showNotification('Error loading vehicles', 'error');
     }
 }
@@ -324,7 +332,7 @@ function searchVehicles() {
 
 function populateUserDropdown(users) {
     const select = document.getElementById('vehicleOwner');
-    select.innerHTML = '<option value="">Select User</option>' + 
+    select.innerHTML = '<option value="">Select Owner</option>' + 
         users.map(user => `<option value="${user._id}">${user.name} (${user.email})</option>`).join('');
 }
 
@@ -332,6 +340,14 @@ function openVehicleModal() {
     document.getElementById('vehicleModalTitle').textContent = 'Add Vehicle';
     document.getElementById('vehicleForm').reset();
     document.getElementById('vehicleModal').style.display = 'block';
+    
+    // Load users if not already loaded
+    if (allUsers.length === 0) {
+        fetch(`${API_URL}/users`)
+            .then(res => res.json())
+            .then(data => populateUserDropdown(data.data || []))
+            .catch(err => console.error('Error loading users:', err));
+    }
 }
 
 function closeVehicleModal() {
@@ -344,11 +360,10 @@ async function saveVehicle(event) {
     const vehicleData = {
         userID: document.getElementById('vehicleOwner').value,
         registrationNo: document.getElementById('vehicleRegNo').value.toUpperCase(),
-        deviceID: document.getElementById('vehicleDeviceID').value,
+        deviceID: document.getElementById('vehicleDeviceId').value,
         vehicleType: document.getElementById('vehicleType').value,
-        manufacturer: document.getElementById('vehicleManufacturer').value,
-        model: document.getElementById('vehicleModel').value,
-        color: document.getElementById('vehicleColor').value
+        manufacturer: document.getElementById('vehicleMake').value || '',
+        model: document.getElementById('vehicleModel').value || ''
     };
 
     try {
@@ -399,11 +414,14 @@ async function deleteVehicle(vehicleId) {
 async function loadGeofences() {
     try {
         const response = await fetch(`${API_URL}/geofences`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        allGeofences = data.data;
+        allGeofences = data.data || [];
         displayGeofences(allGeofences);
     } catch (error) {
         console.error('Error loading geo-fences:', error);
+        const tbody = document.getElementById('geofencesTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" class="loading" style="color: #EF4444;">Error loading geo-fences. Please check if the backend server is running.</td></tr>';
         showNotification('Error loading geo-fences', 'error');
     }
 }
@@ -441,6 +459,7 @@ function openGeofenceModal() {
     document.getElementById('geofenceModalTitle').textContent = 'Add Geo-fence';
     document.getElementById('geofenceForm').reset();
     document.getElementById('geofenceModal').style.display = 'block';
+    toggleGeofenceFields(); // Reset field visibility
 }
 
 function closeGeofenceModal() {
@@ -562,11 +581,14 @@ async function deleteGeofence(geofenceId) {
 async function loadTransactions() {
     try {
         const response = await fetch(`${API_URL}/transactions`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        allTransactions = data.data;
+        allTransactions = data.data || [];
         displayTransactions(allTransactions);
     } catch (error) {
         console.error('Error loading transactions:', error);
+        const tbody = document.getElementById('transactionsTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" class="loading" style="color: #EF4444;">Error loading transactions. Please check if the backend server is running.</td></tr>';
         showNotification('Error loading transactions', 'error');
     }
 }
@@ -610,8 +632,30 @@ function formatDate(dateString) {
 }
 
 function showNotification(message, type = 'info') {
-    alert(message); // Simple alert for now
-    // You can implement a better notification system here
+    // Create a better notification system
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#4F46E5'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 10000;
+        max-width: 400px;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 // Close modals when clicking outside
@@ -623,3 +667,18 @@ window.onclick = function(event) {
         }
     });
 }
+
+// Add CSS for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
