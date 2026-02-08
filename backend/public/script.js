@@ -1,5 +1,6 @@
 // API Base URL
-const API_URL = 'http://localhost:5000/api';
+const API_URL = '/api';
+
 
 // Global variables
 let currentUserId = null;
