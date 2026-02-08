@@ -2,73 +2,81 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const connectDB = require('./config/database');
 
 const app = express();
 
-// Middleware
+/* ======================
+   Middleware
+====================== */
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Connect to MongoDB
+/* ======================
+   Database
+====================== */
 connectDB();
 
-// Routes
+/* ======================
+   Serve Frontend
+====================== */
+app.use(express.static(path.join(__dirname, 'public')));
+
+/* ======================
+   API Routes
+====================== */
 app.use('/api/users', require('./routes/users'));
 app.use('/api/vehicles', require('./routes/vehicles'));
 app.use('/api/geofences', require('./routes/geofences'));
 app.use('/api/tracking', require('./routes/tracking'));
 app.use('/api/transactions', require('./routes/transactions'));
 
-// Health check endpoint
+/* ======================
+   Health Check
+====================== */
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Geo-fencing API is running',
+  res.json({
+    success: true,
+    message: 'GeoToll API is running',
     timestamp: new Date().toISOString()
   });
 });
 
-// Root endpoint
+/* ======================
+   Frontend Entry
+====================== */
 app.get('/', (req, res) => {
-  res.json({
-    message: 'Geo-fencing Based Toll Plaza and Road Safety Alert System API',
-    version: '1.0.0',
-    endpoints: {
-      users: '/api/users',
-      vehicles: '/api/vehicles',
-      geofences: '/api/geofences',
-      tracking: '/api/tracking',
-      transactions: '/api/transactions',
-      health: '/api/health'
-    }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+/* ======================
+   404 Handler
+====================== */
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
   });
 });
 
-// Error handling middleware
+/* ======================
+   Error Handler
+====================== */
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
-    success: false, 
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  res.status(500).json({
+    success: false,
+    message: 'Internal Server Error'
   });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ 
-    success: false, 
-    message: 'Route not found' 
-  });
-});
-
+/* ======================
+   Start Server
+====================== */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
-module.exports = app;
